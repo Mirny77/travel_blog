@@ -6,7 +6,7 @@ use App\Post;
 use Faker\Generator as Faker;
 
 $factory->define(Post::class, function (Faker $faker) {
-    $title = $faker->realText(rand(10,40));
+    $title = $faker->realText(rand(10,50));
     $short_title = mb_strlen($title)>30 ? mb_substr($title,0,30).'...' : $title;
     $created = $faker->dateTimeBetween('-30 days','-1 days');
 
@@ -16,7 +16,7 @@ $factory->define(Post::class, function (Faker $faker) {
         'author_id'=>rand(1,5),
         'descr'=>$faker->realText(rand(100,400)),
         'created_at'=>$created,
-        'updated_at'=>$created
+        'updated_at'=>$created,
 
         //
     ];

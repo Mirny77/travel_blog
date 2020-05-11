@@ -78,16 +78,16 @@ return [
     ],
     'max' => [
         'numeric' => 'The :attribute may not be greater than :max.',
-        'file' => 'The :attribute may not be greater than :max kilobytes.',
-        'string' => 'The :attribute may not be greater than :max characters.',
+        'file' => 'Поле ":attribute" не больше :max КБ',
+        'string' => 'Поле ":attribute" не больше :max символов',
         'array' => 'The :attribute may not have more than :max items.',
     ],
-    'mimes' => 'The :attribute must be a file of type: :values.',
+    'mimes' => 'Поле ":attribute" должно быть в формате jpg,png',
     'mimetypes' => 'The :attribute must be a file of type: :values.',
     'min' => [
         'numeric' => 'The :attribute must be at least :min.',
         'file' => 'The :attribute must be at least :min kilobytes.',
-        'string' => 'The :attribute must be at least :min characters.',
+        'string' => 'Поле ":attribute" не меньше :min символов',
         'array' => 'The :attribute must have at least :min items.',
     ],
     'not_in' => 'The selected :attribute is invalid.',
@@ -145,6 +145,10 @@ return [
     |
     */
 
-    'attributes' => [],
+    'attributes' => [
+        'title'=>'Заголовок',
+        'descr'=>'Описание',
+        'img' => 'Изображение'
+    ],
 
 ];

@@ -2,11 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PostRequest;
 use Illuminate\Http\Request;
 use App\Post;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+
 
 class PostController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth')->except('index','show');
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -43,35 +53,59 @@ class PostController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
+//     *
+//     * @param  \Illuminate\Http\Request  $request
+//     * @return \Illuminate\Http\RedirectResponse
+//     */
+    public function store(PostRequest $request)
     {
-        //
+        $post = new Post();
+        $post->title = $request->title;
+        $post->short_title = Str::length($request->title)>30 ? Str::substr($request->title,0,30).'...' : $request->title;
+        $post->descr = $request->descr;
+        $post->author_id =Auth::user()->id;
+
+        if ($request->file('img')){
+            $path = Storage::putFile('public', $request->file('img'));
+            $url = Storage::url($path);
+            $post->img = $url;
+        }
+        $post->save();
+        return redirect()->route('post.index');
     }
 
     /**
      * Display the specified resource.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
     public function show($id)
     {
-        //
+        $post = Post::join ('users', 'author_id', '=', 'users.id')->find($id);
+        if(!$post){
+            return redirect()->route('post.index')->withErrors("Данный пост не существует");
+        }
+        return view('posts.show', compact('post'));
     }
 
     /**
      * Show the form for editing the specified resource.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
     public function edit($id)
     {
-        //
+        $post=Post::find($id);
+        if(!$post){
+            return redirect()->route('post.index')->withErrors("Данный пост не существует");
+        }
+        if($post->author_id != Auth::user()->id){
+            return redirect()->route('post.index')->withErrors("Вы не можете редактировать данный пост");
+        }
+        return view('posts.edit', compact('post'));
+
     }
 
     /**
@@ -81,9 +115,29 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(PostRequest $request, $id)
     {
-        //
+        $post = Post::find($id);
+        if(!$post){
+            return redirect()->route('post.index')->withErrors("Данный пост не существует");
+        }
+        if($post->author_id != Auth::user()->id){
+            return redirect()->route('post.index')->withErrors("Вы не можете редактировать данный пост");
+        }
+        $post->title = $request->title;
+        $post->short_title = Str::length($request->title)>30 ? Str::substr($request->title,0,30).'...' : $request->title;
+        $post->descr = $request->descr;
+
+
+        if ($request->file('img')){
+            $path = Storage::putFile('public', $request->file('img'));
+            $url = Storage::url($path);
+            $post->img = $url;
+        }
+        $post->update();
+        $id = $post->post_id;
+        return redirect()->route('post.show', compact('id'));
+
     }
 
     /**
@@ -94,6 +148,12 @@ class PostController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $post = Post::find($id);
+        if($post->author_id != Auth::user()->id){
+            return redirect()->route('post.index')->withErrors("Вы не можете удалить данный пост");
+        }
+        $post->delete();
+        return redirect()->route('post.index', compact('id'));
+
     }
 }

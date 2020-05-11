@@ -1,35 +1,38 @@
-@extends('layouts.layout')
+@extends('layouts.layout',['title'=>"Пост № $post->post_id "])
 @section('content')
-    @if(isset($_GET['search']))
-        @if(count($posts)>0)
-            <h2>Результат по запросу "<?= $_GET['search'] ?>"</h2>
-            <p class="'lead">
-                Найдено {{count($posts)}} постов
-            </p>
-        @else
-            <h2>Результат по запросу "<?= $_GET['search'] ?>" ничего не дал</h2>
-            <a href="{{route('post.index')}}" class="btn btn-outline-primary">Вернуться на главную</a>
 
-        @endif
-        @endif
     <div class="row">
-        @foreach($posts as $post)
-        <div class="col-6">
+
+        <div class="col-12">
             <div class="card">
-                <div class="card-header">{{$post->short_title}}</div>
+                <div class="card-header">{{$post->title}}</div>
                 <div class="card-body">
-                    <div class="card-img" style="background-image: url({{$post->img ?? asset("img/22.png")}}) "></div>
+                    <div class="card-img card-img__max" style="background-image: url({{$post->img ?? asset("img/22.jpg")}}) "></div>
+                    <h5><div class="card-descr">Описание: {{$post->descr}}</div></h5>
                     <div class="card-author">Создатель: {{$post->name}}</div>
-                    <a href="#" class="btn btn-outline-primary">Посмотреть</a>
+                    <div class="card-date">Пост создан: {{$post->created_at->diffForHumans()}}</div>
+                    <div class="card-btn">
+                        <a href="{{route('post.index')}}" class="btn btn-outline-primary">Назад</a>
+                        @auth
+                            @if(Auth::user()->id == $post->author_id)
+                        <a href="{{route('post.edit',['id'=>$post->post_id])}}" class="btn btn-outline-success">Редактировать</a>
+                        <form action="{{route('post.destroy',['id'=>$post->post_id])}}"  method="post" onsubmit="if(confirm('Вы точно хотите удалить пост?')) {return true} else {return false}">@csrf
+                            @method('DELETE')
+                            <input type="submit" class="btn btn-outline-danger" value="Удалить">
+
+                        </form>
+                            @endif
+                        @endauth
+
+                    </div>
+
                 </div>
 
 
             </div>
         </div>
-        @endforeach
+
     </div>
-    @if(!isset($_GET['search']))
-    {{$posts->links()}}
-    @endif
+
 
 @endsection
